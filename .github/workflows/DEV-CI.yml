@@ -10,7 +10,27 @@ on:
    secrets:
      JF_ARTIFACTORY_SECRET_1:
        required: true
-       
+     NUGET_API_KEY:
+       required: true
+     THIRDPARTYNUGET:
+       required: true
+     JF_EXTNUGET:
+       required: true
+     JF_UN:
+       required: true
+     JF_PW:
+       required: true
+     AO_SLNNAME:
+       required: true
+     GITHUB_TOKEN:
+       required: true
+     SONAR_TOKEN:
+       required: true
+     AO_API_CSPROJ:
+       required: true
+     AO_WEB_CSPROJ:
+       required: true
+     
     #branches:
      #- main  # restrict actions on pull requests to only run when created against the master branch   
      
