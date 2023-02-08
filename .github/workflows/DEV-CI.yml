@@ -22,8 +22,8 @@ on:
        required: true
      AO_SLNNAME:
        required: true
-     GITHUB_TOKEN:
-       required: true
+     #GITHUB_TOKEN:
+       #required: true
      SONAR_TOKEN:
        required: true
      AO_API_CSPROJ:
