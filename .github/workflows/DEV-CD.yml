@@ -1,17 +1,17 @@
 name: DEV-CD
 on:
-  workflow_run:
-   workflows: ["CALL-DEV-CI"]
-   types:
-     - completed
+  workflow_call:
+    #workflows: ["CALL-DEV-CI"]    
+    #types:
+     #- completed
      
-   inputs:
+    inputs:
       currentrepo:
         required: true
         type: string
         default: 'repo' 
      
-   secrets:
+    secrets:
      JF_ARTIFACTORY_SECRET_1:
        required: true
      ACEONLINE_DEV_API_SERVER:
