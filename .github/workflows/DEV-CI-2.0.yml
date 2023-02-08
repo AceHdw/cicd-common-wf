@@ -205,12 +205,12 @@ jobs:
            jfrog rt ping
            jfrog config show
             
-           jfrog rt s "ACEHW-DEVCI/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+           jfrog rt s "ACEHW-DEVCINEW/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
           
-           jfrog rt upload  ${{ github.workspace }}\_Publish\*-api*.zip  "ACEHW-DEVCI/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
-           jfrog rt upload  ${{ github.workspace }}\_Publish\*-web*.zip  "ACEHW-DEVCI/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+           jfrog rt upload  ${{ github.workspace }}\_Publish\*-api*.zip  "ACEHW-DEVCINEW/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+           jfrog rt upload  ${{ github.workspace }}\_Publish\*-web*.zip  "ACEHW-DEVCINEW/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
            
-           jfrog rt s "ACEHW-DEVCI/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"        
+           jfrog rt s "ACEHW-DEVCINEW/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"        
            
            Start-Sleep -Seconds 30
 # Display Last Deployed Artifacts
