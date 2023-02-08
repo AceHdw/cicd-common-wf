@@ -1,0 +1,17 @@
+name: wf-template
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        default: 'dev'       
+
+jobs:
+  call-wf-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: wf-step
+        run: echo "I am from workflow template!"
+    
