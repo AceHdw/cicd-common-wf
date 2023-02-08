@@ -1,10 +1,7 @@
 name: DEV-CD
 on:
-  workflow_call:
-    #workflows: ["CALL-DEV-CI"]    
-    #types:
-     #- completed
-     
+  workflow_call:  
+    
     inputs:
       currentrepo:
         required: true
@@ -12,21 +9,21 @@ on:
         default: 'repo' 
      
     secrets:
-     JF_ARTIFACTORY_SECRET_1:
-       required: true
-     ACEONLINE_DEV_API_SERVER:
-       required: true     
-     ACEONLINE_DEV_WFE_SERVER:
-       required: true
-     DEV_WFE_PATH:
-       required: true
-     DEV_API_PATH:
-       required: true    
-     JF_UN:
-       required: true
-     JF_PW:
-       required: true
-     
+      JF_ARTIFACTORY_SECRET_1:
+        required: true
+      ACEONLINE_DEV_API_SERVER:
+        required: true     
+      ACEONLINE_DEV_WFE_SERVER:
+        required: true
+      DEV_WFE_PATH:
+        required: true
+      DEV_API_PATH:
+        required: true    
+      JF_UN:
+        required: true
+      JF_PW:
+        required: true     
+    
 jobs:
   DEV-DEPLOY:
     runs-on: [self-hosted, Windows, x64, DEV]
