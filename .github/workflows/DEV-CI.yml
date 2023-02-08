@@ -1,4 +1,4 @@
-name: DEV-CI-2.0
+name: DEV-CI
 on:  
   workflow_call:
    inputs:
@@ -10,8 +10,8 @@ on:
      #- main  # restrict actions on pull requests to only run when created against the master branch   
      
 jobs:
-  DEV-CI-NEW:
-     name: DEV-CI-NEW     
+  DEV-CI:
+     name: DEV-CI    
      env:      
        PACKAGE_VERSION: ${{ github.ref == 'refs/heads/master' && format('0.0.{0}', github.run_number) || format('0.0.{0}-beta', github.run_number) }}
        NUGET_API_URL: https://api.nuget.org/v3/index.json
@@ -205,12 +205,12 @@ jobs:
            jfrog rt ping
            jfrog config show
             
-           jfrog rt s "ACEHW-DEVCINEW/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+           jfrog rt s "ACEHW-DEVCI/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
           
-           jfrog rt upload  ${{ github.workspace }}\_Publish\*-api*.zip  "ACEHW-DEVCINEW/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
-           jfrog rt upload  ${{ github.workspace }}\_Publish\*-web*.zip  "ACEHW-DEVCINEW/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+           jfrog rt upload  ${{ github.workspace }}\_Publish\*-api*.zip  "ACEHW-DEVCI/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+           jfrog rt upload  ${{ github.workspace }}\_Publish\*-web*.zip  "ACEHW-DEVCI/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
            
-           jfrog rt s "ACEHW-DEVCINEW/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"        
+           jfrog rt s "ACEHW-DEVCI/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"        
            
            Start-Sleep -Seconds 30
 # Display Last Deployed Artifacts
