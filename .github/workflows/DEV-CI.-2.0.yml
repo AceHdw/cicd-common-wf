@@ -1,17 +1,224 @@
-name: wf-template
-
-on:
-  workflow_call:
+name: DEV-CI-2.0
+on:  
+  workflow_call: 
     inputs:
-      environment:
+      currentrepo:
         required: true
         type: string
-        default: 'dev'       
-
+        default: 'repo'        
+    #branches:
+     #- main  # restrict actions on pull requests to only run when created against the master branch   
+     
 jobs:
-  call-wf-job:
-    runs-on: ubuntu-latest
-    steps:
-      - name: wf-step
-        run: echo "I am from workflow template!"
-    
+  DEV-CI-NEW:
+     name: DEV-CI-NEW     
+     env:      
+       PACKAGE_VERSION: ${{ github.ref == 'refs/heads/master' && format('0.0.{0}', github.run_number) || format('0.0.{0}-beta', github.run_number) }}
+       NUGET_API_URL: https://api.nuget.org/v3/index.json
+       NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+       WORKING_DIR: ${{ github.workspace }}
+       GITHUB_OWNERNAME: ${{ github.repositary }}       
+       BUILD_ID: ${{ github.run_number }}
+       REPO_NAME: ${{ github.event.repository.name }}
+       COMMITID: ${{ github.sha }}
+      
+     runs-on: [self-hosted, Windows, x64, DEV]                      
+     
+     steps:
+     
+# Display Last Commit Id
+
+      - name: DISPLAY LAST COMMIT ID
+        run: |            
+            echo  ${{ github.sha }}             
+            
+      - name: TO DELETE GH WORKSPACE FOLDER     
+        run: rm ${{ github.workspace }} -Force -Recurse -Verbose -ErrorAction SilentlyContinue         
+     
+      - name: Set up JDK 11                
+        uses: actions/setup-java@v1        
+        with:
+          java-version: 1.11     
+      
+      - uses: actions/checkout@v2             
+        with:     
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis           
+          
+      - name: JFROG CLI SETUP
+        uses: jfrog/setup-jfrog-cli@v2.0.0      
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
+          JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'
+          
+# GET Current Date and Time
+
+      - name: TIME SETUP
+        id: time
+        uses: nanzm/get-time-action@v1.1
+        with:
+          timeZone: -5
+          format: 'MM-DD-YY-HH-mm'
+          
+      - name: GET TIME
+        env:
+          TIME: "${{ steps.time.outputs.time }}"
+        run: |
+          echo $TIME           
+          
+# Add nuget artifacts repository to push artifacts  
+
+      - name: Add 3RD PARTY NUGET PACKAGES 
+        run: |                         
+          $pkgname1="THIRDPARTYNUGET"
+          $nugetapi="nuget.org"
+          
+          dotnet.exe nuget list source
+          
+          dotnet.exe nuget remove source $pkgname1
+          dotnet.exe nuget remove source $nugetapi
+          
+          dotnet.exe nuget add source https://api.nuget.org/v3/index.json -n nuget.org 
+          dotnet.exe nuget add source "${{ secrets.THIRDPARTYNUGET }}" -n $pkgname1
+          
+          #dotnet.exe nuget add source "${{ secrets.JF_EXTNUGET }}" -n $pkgname1 -u "${{ secrets.JF_UN }}" -p "${{ secrets.JF_PW }}"                 
+                   
+# Add nuget to PATH                                 
+
+      - name: SETUP NUGET
+        uses: NuGet/setup-nuget@v1.0.2 
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+      
+      - name: WORKSPACE FOLDER
+        run:  cd ${{ github.workspace }} 
+        
+      - name: GITHUB REPO NAME
+        run:  echo ${{ github.event.repository.name }}      
+      
+      - name: RESTORE NUGET & 3RD PARTY PACKAGES       
+        run: nuget restore  "${{ github.workspace }}\${{ secrets.AO_SLNNAME }}" -msbuildversion 17.1        
+       
+# Add 3rd Party to Path
+
+      - name: SETUP 3RD PARTY DLL
+        uses: NuGet/setup-nuget@v1.0.2                
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+
+# Add msbuild to PATH                                 
+     
+      - name: ADD MSBUILD TO PATH
+        uses: microsoft/setup-msbuild@v1.0.3
+  
+      - name: ECHO MSBUILD
+        run:  msbuild -version  
+   
+      - name: BUILD SOLUTION FILE
+        run:  msbuild.exe "${{ github.workspace }}\${{ secrets.AO_SLNNAME }}"  -restore -t:clean   /p:targetFramework="net462"                 
+        
+# To DOUBLECHECK RESTORED NUGET & 3RD-PARTY Packages
+
+      - name: DOUBLECHECK RESTORED NUGET & 3RD PARTY PACKAGES
+        run: nuget restore  "${{ github.workspace }}\${{ secrets.AO_SLNNAME }}" -msbuildversion 17.1
+
+# To test dotnet application using NUNIT           
+
+      #- name: NUNIT TESTING KICK STARTS
+      #  run:  dotnet vstest ./Ace.DevTraining.Tests/bin/Debug/Ace.DevTraining.Tests.dll           
+
+# Sonar Validation    
+         
+      - name: Cache SonarQube packages
+        uses: actions/cache@v1
+        with:
+          path: ~\sonar\cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+          
+      - name: Cache SonarQube scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v1
+        with:
+          #path: .\.sonar\scanner
+          path: ${{ github.workspace }}\.sonar\scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+          
+      - name: Install SonarQube scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'        
+        shell: powershell
+        run: |          
+          rm ${{ github.workspace }}\.sonar\scanner -Force -Recurse -ErrorAction SilentlyContinue          
+          New-Item -Path .\.sonar\scanner -ItemType Directory -ErrorAction SilentlyContinue
+          #dotnet tool update  dotnet-sonarscanner --add-source 'https://api.nuget.org/v3/index.json' --ignore-failed-sources --tool-path ${{ github.workspace }}\.sonar\scanner
+          dotnet tool update dotnet-sonarscanner --tool-path ${{ github.workspace }}\.sonar\scanner
+          
+      - name: Build and analyze
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+        shell: powershell
+        run: |
+          ${{ github.workspace }}\.sonar\scanner\dotnet-sonarscanner begin /k:"AceHdw_DMPS-ResponsiveUI" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          MSBuild.exe "${{ github.workspace }}\${{ secrets.AO_SLNNAME }}" /t:Rebuild /p:TargetFramework=net462
+          ${{ github.workspace }}\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"        
+     
+# To Publish dotnet application in LOCAL and JF
+  
+      - name: PUBLISH ARTIFACTS IN LOCAL
+        env:	
+          Publish_Folder_Name_api: ${{ github.workspace }}\_Publish\api-${{ github.run_number }}
+          Publish_Folder_Name_web: ${{ github.workspace }}\_publish\web-${{ github.run_number }}
+         
+        run: |
+          rm ${{ github.workspace }}\_Publish\api -Force -Recurse -ErrorAction SilentlyContinue
+          mkdir ${{ github.workspace }}\_Publish\api
+          MSBuild "${{ github.workspace }}\${{ secrets.AO_API_CSPROJ}}" /p:DeployOnBuild=True /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl=${{ github.workspace }}\_Publish\api /p:configuration=Prod1
+          
+                   
+          rm ${{ github.workspace }}\_Publish\web -Force -Recurse -ErrorAction SilentlyContinue
+          mkdir ${{ github.workspace }}\_Publish\web
+          MSBuild "${{ github.workspace }}\${{ secrets.AO_WEB_CSPROJ}}" /p:DeployOnBuild=True /p:DeployDefaultTarget=WebPublish /p:WebPublishMethod=FileSystem /p:publishUrl=${{ github.workspace }}\_Publish\web /p:configuration=Prod1         
+          
+          $JFArtifactName_1 = "${{ github.run_number }}-api-${{ steps.time.outputs.time }}.${{ github.event.repository.name }}.zip"
+          $JFArtifactName_2 = "${{ github.run_number }}-web-${{ steps.time.outputs.time }}.${{ github.event.repository.name }}.zip" 
+          
+          echo "$JFArtifactName_1"
+          echo "$JFArtifactName_2"
+          
+          Compress-Archive -Path ${{ github.workspace }}\_Publish\api\* -DestinationPath ${{ github.workspace }}\_Publish\$JFArtifactName_1
+          Compress-Archive -Path ${{ github.workspace }}\_Publish\web\* -DestinationPath ${{ github.workspace }}\_Publish\$JFArtifactName_2
+          
+          Get-ChildItem -Path "${{ github.workspace }}\_Publish\"
+          
+          Start-Sleep -Seconds 30
+          
+# UPLOAD Runtime Build Artifacts to JFROG Artifactory
+
+      - name: JFROG CLI SETUP 
+        uses: jfrog/setup-jfrog-cli@v2.0.0      
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
+          JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'      
+
+      - name: UPLOAD TO JFROG ARTIFACTORY
+        run: |
+           jfrog rt ping
+           jfrog config show
+            
+           jfrog rt s "ACEHW-DEVCI/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+          
+           jfrog rt upload  ${{ github.workspace }}\_Publish\*-api*.zip  "ACEHW-DEVCI/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+           jfrog rt upload  ${{ github.workspace }}\_Publish\*-web*.zip  "ACEHW-DEVCI/${{ github.event.repository.name }}/" --flat --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+           
+           jfrog rt s "ACEHW-DEVCI/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=2 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"        
+           
+           Start-Sleep -Seconds 30
+# Display Last Deployed Artifacts
+
+      - name: BUILD NUMBER ${{ github.run_number }} CREATED
+        run: |        
+          $JFArtifactName_1 = "${{ github.run_number }}-api-${{ steps.time.outputs.time }}.${{ github.event.repository.name }}.zip"
+          $JFArtifactName_2 = "${{ github.run_number }}-web-${{ steps.time.outputs.time }}.${{ github.event.repository.name }}.zip" 
+          
+          echo "$JFArtifactName_1"
+          echo "$JFArtifactName_2"   
