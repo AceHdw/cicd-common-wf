@@ -1,6 +1,6 @@
 name: DEV-CD
 on:
-  workflow_call:
+  workflow_run:
    workflows: ["CALL-DEV-CI"]
    types:
      - completed
