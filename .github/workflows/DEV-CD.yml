@@ -15,9 +15,7 @@ on:
      JF_ARTIFACTORY_SECRET_1:
        required: true
      ACEONLINE_DEV_API_SERVER:
-       required: true
-     ACEONLINE_DEV_API_SERVER:
-       required: true       
+       required: true     
      ACEONLINE_DEV_WFE_SERVER:
        required: true
      DEV_WFE_PATH:
