@@ -1,0 +1,150 @@
+name: DEV-CD
+on:
+  workflow_call:
+   workflows: ["CALL-DEV-CI"]
+   types:
+     - completed
+     
+   inputs:
+      currentrepo:
+        required: true
+        type: string
+        default: 'repo' 
+     
+   secrets:
+     JF_ARTIFACTORY_SECRET_1:
+       required: true
+     ACEONLINE_DEV_API_SERVER:
+       required: true
+     ACEONLINE_DEV_API_SERVER:
+       required: true       
+     ACEONLINE_DEV_WFE_SERVER:
+       required: true
+     DEV_WFE_PATH:
+       required: true
+     DEV_API_PATH:
+       required: true    
+     JF_UN:
+       required: true
+     JF_PW:
+       required: true
+     
+jobs:
+  DEV-DEPLOY:
+    runs-on: [self-hosted, Windows, x64, DEV]
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+   
+   # DEPLOY TO DEV-IIS
+    steps:          
+      - name: JFROG CLI SETUP
+        uses: jfrog/setup-jfrog-cli@v2.0.0
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}
+          JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'
+          
+      - name: DEV API DEPLOYMENT
+        run : |
+          Start-Sleep -Seconds 30
+          jfrog rt ping
+          jfrog config show    
+          
+          #### DEV API ENVIRONMENT CONFIGURATION ###
+                 
+          $ACEONLINE_DEV_API_SERVER = "${{ secrets.ACEONLINE_DEV_API_SERVER }}"
+          $DEV_API_PATH             = "${{ secrets.DEV_API_PATH }}"
+          $DEV_APISERVERPATH        = "${{ secrets.ACEONLINE_DEV_API_SERVER }}\${{ secrets.DEV_API_PATH }}"
+          $DEV_APIZIP               = "$DEV_APISERVERPATH\_APIZIP"
+          
+          Get-ChildItem -Path "$DEV_APISERVERPATH" -ErrorAction SilentlyContinue
+          Remove-Item -Path "$DEV_APISERVERPATH"   -Recurse -Force -Verbose -ErrorAction SilentlyContinue
+                   
+          Remove-Item -Path "$DEV_APIZIP"   -Recurse -Force -Verbose -ErrorAction SilentlyContinue
+          New-Item    -Path "$DEV_APIZIP"   -ItemType Directory -Force -Verbose -ErrorAction SilentlyContinue
+          Get-ChildItem -Path "$DEV_APIZIP"
+          
+      - name: JFROG CLI SETUP 
+        uses: jfrog/setup-jfrog-cli@v2.0.0      
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
+          JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'
+          
+      - name: DEV API DEPLOYMENT
+        run : |        
+          $DEV_APISERVERPATH        = "${{ secrets.ACEONLINE_DEV_API_SERVER }}\${{ secrets.DEV_API_PATH }}"
+          $DEV_APIZIP               = "$DEV_APISERVERPATH\_APIZIP"
+          
+          Start-Sleep -Seconds 30
+          
+          jfrog.exe rt dl  "ACEHW-DEVCI/${{ github.event.repository.name }}/*-api-*.zip" "$DEV_APIZIP/" --sort-by=created --sort-order=desc --limit=1  --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+          
+          Get-ChildItem -Path "$DEV_APIZIP\${{ github.event.repository.name }}" -Filter "*-api-*.zip" 
+          
+          Get-ChildItem -Path "$DEV_APIZIP\${{ github.event.repository.name }}" -Filter "*-api-*.zip" |
+          ForEach-Object {
+            Expand-Archive -Path $_.FullName  -DestinationPath "$DEV_APISERVERPATH"  -Force  
+              }
+            
+          set-Location -Path "D:\GitHub\actions-runner-a\_w\_tool\transform\WebConfigTransformRunner.1.0.0.1\Tools\"
+          .\WebConfigTransformRunner.exe "$DEV_APISERVERPATH\Web.config" "$DEV_APISERVERPATH\bin\Web.dev1.config"  "$DEV_APISERVERPATH\Web.config" 
+          
+          Remove-Item -Path "$DEV_APIZIP"   -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+           
+          cd "$DEV_APISERVERPATH\bin\"
+          pwd
+          dir w*.config
+          rm  w*.config  -Recurse -Force -ErrorAction SilentlyContinue -Verbose
+          Get-ChildItem -Path  "$DEV_APISERVERPATH\bin\"
+          Start-Sleep -Seconds 30
+          
+          #### DEV WFE ENVIRONMENT CONFIGURATION ###
+          
+      - name: JFROG CLI SETUP 
+        uses: jfrog/setup-jfrog-cli@v2.0.0      
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
+          JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'
+          
+      - name: DEV WFE DEPLOYMENT
+        run : |
+          $ACEONLINE_DEV_WFE_SERVER = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}"
+          $DEV_WFE_PATH = "${{ secrets.DEV_WFE_PATH }}"
+          $DEV_WFESERVERPATH = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}"
+          $DEV_WFEZIP =  "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}\_WFEZIP"
+          
+          Get-ChildItem -Path "$DEV_WFESERVERPATH" -ErrorAction SilentlyContinue
+          Remove-Item -Path "$DEV_WFESERVERPATH"   -Recurse -Force -Verbose -ErrorAction SilentlyContinue
+          
+          New-Item    -Path "$DEV_WFESERVERPATH"   -ItemType Directory -Verbose         
+          New-Item    -Path "$DEV_WFEZIP"   -ItemType Directory -Verbose          
+          Get-ChildItem -Path "$DEV_WFEZIP"
+          
+      - name: JFROG CLI SETUP 
+        uses: jfrog/setup-jfrog-cli@v2.0.0      
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
+          JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'
+          
+      - name: DEV WFE DEPLOYMENT
+        run : |
+          $DEV_WFESERVERPATH = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}"
+          $DEV_WFEZIP =  "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}\_WFEZIP"
+          
+          jfrog.exe rt dl  "ACEHW-DEVCI/${{ github.event.repository.name }}/*-web-*.zip" "$DEV_WFEZIP/" --sort-by=created --sort-order=desc --limit=1  --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+          Get-ChildItem -Path "$DEV_WFEZIP\${{ github.event.repository.name }}" -Filter "*-web-*.zip"         
+          
+          Get-ChildItem -Path "$DEV_WFEZIP\${{ github.event.repository.name }}" -Filter "*-web-*.zip" |
+          ForEach-Object {
+          Expand-Archive -Path $_.FullName  -DestinationPath "$DEV_WFESERVERPATH"  -Verbose -Force          
+           }           
+          set-Location -Path "D:\GitHub\actions-runner-a\_w\_tool\transform\WebConfigTransformRunner.1.0.0.1\Tools\"       
+          .\WebConfigTransformRunner.exe  "$DEV_WFESERVERPATH\Web.config" "$DEV_WFESERVERPATH\bin\Web.dev1.config"  "$DEV_WFESERVERPATH\Web.config"
+                    
+          Remove-Item -Path "$DEV_WFEZIP"   -Recurse -Force -ErrorAction SilentlyContinue -Verbose        
+                  
+          cd "$DEV_WFESERVERPATH\bin\"
+          pwd
+          dir w*.config         
+          rm  w*.config -Recurse -Force -ErrorAction SilentlyContinue -Verbose                           
+          
+          Get-ChildItem -Path  "$DEV_WFESERVERPATH\bin\"
+          Exit PSSession 
