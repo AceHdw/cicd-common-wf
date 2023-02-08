@@ -2,10 +2,15 @@ name: DEV-CI
 on:  
   workflow_call:
    inputs:
-      currentrepo:
+      current_repo:
         required: true
         type: string
-        default: 'repo'
+        default: 'null'
+        
+      sonar_projectname:
+        required: true
+        type: string
+        default: 'null'  
         
    secrets:
      JF_ARTIFACTORY_SECRET_1:
