@@ -6,6 +6,11 @@ on:
         required: true
         type: string
         default: 'repo'
+        
+   secrets:
+     JF_ARTIFACTORY_SECRET_1:
+       required: true
+       
     #branches:
      #- main  # restrict actions on pull requests to only run when created against the master branch   
      
@@ -46,8 +51,7 @@ jobs:
           
       - name: JFROG CLI SETUP
         uses: jfrog/setup-jfrog-cli@v2.0.0      
-        env:
-          #JF_ARTIFACTORY_1: ${{ JF_ARTIFACTORY_SECRET_1 }}         
+        env:          
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
           JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'
           
