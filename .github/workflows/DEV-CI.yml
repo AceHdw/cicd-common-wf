@@ -1,6 +1,5 @@
 name: DEV-CI
-on:
-  push:
+on:  
   workflow_call:
    inputs:
       current_repo:
