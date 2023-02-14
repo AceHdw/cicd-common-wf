@@ -190,7 +190,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
         shell: powershell
         run: |
-          ${{ github.workspace }}\.sonar\scanner\dotnet-sonarscanner begin sonar.projectKey="AceHdw_DMPS-ResponsiveUI" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
+          ${{ github.workspace }}\.sonar\scanner\dotnet-sonarscanner begin /k:"AceHdw_DMPS-ResponsiveUI" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="${{ secrets.SONAR_HOST_URL }}"
           MSBuild.exe "${{ github.workspace }}\${{ secrets.AO_SLNNAME }}" /t:Rebuild /p:TargetFramework=net462
           ${{ github.workspace }}\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"        
      
