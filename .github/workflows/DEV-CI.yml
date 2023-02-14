@@ -43,7 +43,7 @@ on:
      
 jobs:
   DEV-CI:
-     name: DEV-CI    
+     name: DEV-CI     
      env:      
        PACKAGE_VERSION: ${{ github.ref == 'refs/heads/master' && format('0.0.{0}', github.run_number) || format('0.0.{0}-beta', github.run_number) }}
        NUGET_API_URL: https://api.nuget.org/v3/index.json
@@ -78,7 +78,7 @@ jobs:
           
       - name: JFROG CLI SETUP
         uses: jfrog/setup-jfrog-cli@v2.0.0      
-        env:          
+        env:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
           JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'
           
@@ -253,4 +253,4 @@ jobs:
           $JFArtifactName_2 = "${{ github.run_number }}-web-${{ steps.time.outputs.time }}.${{ github.event.repository.name }}.zip" 
           
           echo "$JFArtifactName_1"
-          echo "$JFArtifactName_2" 
+          echo "$JFArtifactName_2"
