@@ -32,7 +32,7 @@ env:
  commitid: ${{ github.sha }}
  
 jobs:
-  QA1:
+  QA-1:
     uses: AceHdw/cicd-common-wf/.github/workflows/QA1-CD.yml@main
     with:
       buildid_qaapiwfe: ${{ github.event.inputs.buildid_qaapiwfe }}    
@@ -51,8 +51,8 @@ jobs:
       QA_API_PATH: "${{ secrets.QA_API_PATH }}"
       QA_WFE_PATH: "${{ secrets.QA_WFE_PATH }}"      
 
-  QA2:
-    needs: QA1
+  QA-2:
+    needs: QA-1
     uses: AceHdw/cicd-common-wf/.github/workflows/QA2-CD.yml@main
     with:
       buildid_qaapiwfe: ${{ github.event.inputs.buildid_qaapiwfe }}
