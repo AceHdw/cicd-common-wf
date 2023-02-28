@@ -47,7 +47,10 @@ jobs:
                  
           $ACEONLINE_DEV_API_SERVER = "${{ secrets.ACEONLINE_DEV_API_SERVER }}"
           $DEV_API_PATH             = "${{ secrets.DEV_API_PATH }}"
-          $DEV_APISERVERPATH        = "${{ secrets.ACEONLINE_DEV_API_SERVER }}\${{ secrets.DEV_API_PATH }}"
+          
+          #$DEV_APISERVERPATH        = "${{ secrets.ACEONLINE_DEV_API_SERVER }}\${{ secrets.DEV_API_PATH }}"
+          $DEV_APISERVERPATH        = "${{ vars.API_TEST_PATH }}"
+          
           $DEV_APIZIP               = "$DEV_APISERVERPATH\_APIZIP"
           
           Get-ChildItem -Path "$DEV_APISERVERPATH" -ErrorAction SilentlyContinue
@@ -65,7 +68,9 @@ jobs:
           
       - name: DEV API DEPLOYMENT
         run : |        
-          $DEV_APISERVERPATH        = "${{ secrets.ACEONLINE_DEV_API_SERVER }}\${{ secrets.DEV_API_PATH }}"
+          #$DEV_APISERVERPATH        = "${{ secrets.ACEONLINE_DEV_API_SERVER }}\${{ secrets.DEV_API_PATH }}"
+          $DEV_APISERVERPATH        = "${{ vars.API_TEST_PATH }}"
+          
           $DEV_APIZIP               = "$DEV_APISERVERPATH\_APIZIP"
           
           Start-Sleep -Seconds 30
@@ -103,8 +108,12 @@ jobs:
         run : |
           $ACEONLINE_DEV_WFE_SERVER = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}"
           $DEV_WFE_PATH = "${{ secrets.DEV_WFE_PATH }}"
-          $DEV_WFESERVERPATH = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}"
-          $DEV_WFEZIP =  "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}\_WFEZIP"
+          
+          #$DEV_WFESERVERPATH = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}"
+          $DEV_WFESERVERPATH = "${{ vars.WEB_TEST_PATH }}"
+          
+          #$DEV_WFEZIP =  "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}\_WFEZIP"
+          $DEV_WFEZIP =  "$DEV_WFESERVERPATH\_WFEZIP"
           
           Get-ChildItem -Path "$DEV_WFESERVERPATH" -ErrorAction SilentlyContinue
           Remove-Item -Path "$DEV_WFESERVERPATH"   -Recurse -Force -Verbose -ErrorAction SilentlyContinue
@@ -121,8 +130,11 @@ jobs:
           
       - name: DEV WFE DEPLOYMENT
         run : |
-          $DEV_WFESERVERPATH = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}"
-          $DEV_WFEZIP =  "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}\_WFEZIP"
+          #$DEV_WFESERVERPATH = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}"
+          $DEV_WFESERVERPATH = "${{ vars.WEB_TEST_PATH }}"
+          
+          #$DEV_WFEZIP =  "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}\_WFEZIP"
+          $DEV_WFEZIP =  "$DEV_WFESERVERPATH\_WFEZIP"
           
           jfrog.exe rt dl  "ACEHW-DEVCI/${{ github.event.repository.name }}/*-web-*.zip" "$DEV_WFEZIP/" --sort-by=created --sort-order=desc --limit=1  --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
           Get-ChildItem -Path "$DEV_WFEZIP\${{ github.event.repository.name }}" -Filter "*-web-*.zip"         
