@@ -1,0 +1,322 @@
+#  "The below variables will give some insights about the Pre Defined Variables that should get updated in the GH ==> Secrets"  ###
+
+# (ORG) secrets.JF_UN ==> JFROG USERNAME (admin)
+# (ORG) secrets.JF_PW  ==> JFROG PASSWORD (encrypted)
+# (ORG) secrets.JF_3RDPARTY ==> http://localhost:8081/artifactory/THIRDPARTYDLL/3rdParty_1.zip
+# (ORG) secrets.JF_DEVPR ==>http://localhost:8081/artifactory/DEVPR/
+# (ORG) secrets.JF_DEVCI ==> http://localhost:8081/artifactory/DEVCI/
+# (ORG) secrets.JF_NUGET ==> http://localhost:8081/artifactory/api/nuget/nuget
+# (ORG) secrets.JF_EXTNUGET ==> http://localhost:8081/artifactory/api/nuget/externaldllnuget
+# (ORG) secrets.JF_QAREL ==> http://localhost:8081/artifactory/QAREL/
+# (ORG) secrets.JF_ARTIFACTORY_SECRET_1 ==> JFROG CLI SETUP TOKEN VALUE/
+# (ORG) secrets.THIRDPARTYNUGET==>\\Liss0768\3rdpartydll\NugetPackages
+
+# (ORG) secrets.ACEONLINE_DEV_API_SERVER ==>\\liss0774
+# (ORG) secrets.ACEONLINE_DEV_WFE_SERVER ==>\\liss0749
+
+# (ORG) secrets.ACEONLINE_QA1_API_SERVER ==>\\liss0772
+# (ORG) secrets.ACEONLINE_QA1_WFE_SERVER ==>\\liss0314
+
+# (ORG) secrets.ACEONLINE_QA2_API_SERVER ==>\\liss0773
+# (ORG) secrets.ACEONLINE_QA2_WFE_SERVER ==>\\liss0315
+
+# (ORG) secrets.ACEONLINE_PROD1_API_SERVER ==>\\liss0775
+# (ORG) secrets.ACEONLINE_PROD1_WFE_SERVER ==>\\liss0331
+
+# (ORG) secrets.ACEONLINE_PROD2_API_SERVER ==>\\liss0776
+# (ORG) secrets.ACEONLINE_PROD2_WFE_SERVER ==>\\liss0332
+
+####################################################################################################
+
+# (REPO) secrets.AO_SLNNAME ==> src\DMPS.SLN
+# (REPO) secrets.AO_API_CSPROJ==>src\hosts\DMPSServices.ServiceHost\DMPSServices.ServiceHost.csproj
+# (REPO) secrets.AO_WEB_CSPROJ==>src\hosts\DMPS.Website\DMPS.Website.csproj
+
+# (REPO) secrets.DEV_API_PATH ==>DevCorpAceApps\DMPSServices
+# (REPO) secrets.DEV_WFE_PATH ==>NetApplications\DMPS
+ 
+# (REPO) secrets.QA_API_PATH ==>CorpAceApps\DMPSServices
+# (REPO) secrets.QA_WFE_PATH ==>NetApplications\DMPS
+
+# (REPO) secrets.PROD_API_PATH ==>CorpAceApps\DMPSServices
+# (REPO) secrets.PROD_WFE_PATH ==>NetApplications\DMPS
+
+# (REPO) secrets.QA ==>QA
+# (REPO) secrets.PROD ==>PROD
+
+
+######################################################################################################
+
+###### QA MASTER SETUP BEGINS #####
+
+name: QA2-CD
+on:
+  workflow_call:
+    secrets:
+    
+      JF_ARTIFACTORY_SECRET_1: 
+        description: "required"
+        required: true
+        
+      JF_UN:
+        description: "required"
+        required: true
+
+      JF_PW:
+        description: "required"
+        required: true
+        
+      ACEONLINE_QA1_API_SERVER: 
+        description: "required"
+        required: true
+        
+      ACEONLINE_QA1_WFE_SERVER: 
+       description: "required"
+       required: true
+       
+      ACEONLINE_QA2_API_SERVER: 
+        description: "required"
+        required: true
+        
+      ACEONLINE_QA2_WFE_SERVER: 
+       description: "required"
+       required: true
+        
+      QA_API_PATH: 
+        description: "required"
+        required: true
+        
+      QA_WFE_PATH: 
+        description: "required"
+        required: true
+        
+    inputs:
+      buildid_qaapiwfe:
+        type: string
+  
+###### QA MASTER SETUP ENDS #######
+env:
+ commitid: ${{ github.sha }}
+
+jobs:
+  QA2-DEPLOY:
+    runs-on: [self-hosted, Windows, x64, QA] 
+    
+#########################################  DOWNLOAD BUILD ARTIFACT BASED ON DEVELOPER BEGINS #############################################################
+                 
+#### QA2 API ENVIRONMENT CONFIGURATION & QA2 API DEPLOYMENT BEGINS ###
+
+    steps:      
+      - name: JFROG CLI SETUP 
+        uses: jfrog/setup-jfrog-cli@v2.0.0      
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
+          JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'              
+                  
+      - name: QA2 API DEPLOYMENT - SPECIFIED DEV BUILD
+        if: github.event.inputs.buildid_qaapiwfe != '' 
+        run : |         
+          exit 0
+          jfrog rt ping
+          jfrog config show
+          
+          echo "BUILDIDINPUTS-QA="${{ github.event.inputs.buildid_qaapiwfe }}           
+          
+          $ACEONLINE_QA2_API_SERVER = "${{ secrets.ACEONLINE_QA2_API_SERVER }}"
+          $QA2_API_PATH             = "${{ secrets.QA_API_PATH }}"
+          $QA2_APISERVERPATH        = "${{ secrets.ACEONLINE_QA2_API_SERVER }}\${{ secrets.QA_API_PATH }}"
+          $QA2_APIZIP               = "${{ secrets.ACEONLINE_QA2_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"                   
+          $buildid_qaapiwfe         = "${{ github.event.inputs.buildid_qaapiwfe}}"
+                  
+          Get-ChildItem -Path "$QA2_APISERVERPATH" -ErrorAction SilentlyContinue
+          Remove-Item -Path "$QA2_APISERVERPATH"   -Recurse -Force -Verbose -ErrorAction SilentlyContinue
+          
+          New-Item    -Path "$QA2_APISERVERPATH"   -ItemType Directory -Verbose
+          New-Item    -Path "$QA2_APIZIP"   -ItemType Directory -Verbose
+        
+          $QA2_APISERVERPATH        = "${{ secrets.ACEONLINE_QA2_API_SERVER }}\${{ secrets.QA_API_PATH }}"
+          $QA2_APIZIP               = "${{ secrets.ACEONLINE_QA2_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"                             
+          
+          jfrog rt cp "ACEHW-DEVCI/${{ github.event.repository.name }}/${{ github.event.inputs.buildid_qaapiwfe }}-api-*-zip"  "ACEHW-QAREL/" --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+          jfrog rt dl "ACEHW-QAREL/${{ github.event.repository.name }}/${{ github.event.inputs.buildid_qaapiwfe }}-api-*.zip"  "$QA2_APIZIP/" --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+         
+          Get-ChildItem -Path "$QA2_APIZIP\${{ github.event.repository.name }}" -Filter "*-api-*.zip"         
+          
+          Get-ChildItem -Path "$QA2_APIZIP\${{ github.event.repository.name }}" -Filter "*-api-*.zip" |
+          ForEach-Object {
+          Expand-Archive -Path $_.FullName  -DestinationPath "$QA2_APISERVERPATH"  -Verbose -Force          
+           }
+           
+          Start-Sleep -Seconds 30 
+          
+          set-Location -Path "D:\GitHub\actions-runner-a\_w\_tool\transform\WebConfigTransformRunner.1.0.0.1\Tools\"
+          .\WebConfigTransformRunner.exe "$QA2_APISERVERPATH\Web.config" "$QA2_APISERVERPATH\bin\Web.QA2.config"  "$QA2_APISERVERPATH\Web.config"           
+                   
+          #Remove-Item -Path "$QA2_APIZIP"   -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
+          
+          cd "$QA2_APISERVERPATH\bin\" 
+          pwd
+          dir w*.config
+          rm  w*.config  -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
+          
+          Get-ChildItem -Path  "$QA2_APISERVERPATH\bin\"                   
+         
+#### QA2 API ENVIRONMENT CONFIGURATION & QA2 API DEPLOYMENT ENDS ###
+                      
+#### QA2 WFE ENVIRONMENT CONFIGURATION & QA2 WFE DEPLOYMENT BEGINS ###               
+                      
+      - name: QA2 WFE DEPLOYMENT - SPECIFIED DEV BUILD
+        if: github.event.inputs.buildid_qaapiwfe != ''
+        run : |      
+          exit 0
+          $ACEONLINE_QA2_WFE_SERVER = "${{ secrets.ACEONLINE_QA2_WFE_SERVER }}"
+          $QA2_WFE_PATH             = "${{ secrets.QA_WFE_PATH }}"
+          $QA2_WFESERVERPATH        = "${{ secrets.ACEONLINE_QA2_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}"
+          $QA2_WFEZIP               = "${{ secrets.ACEONLINE_QA2_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}\_WFEZIP"  
+          $buildid_qaapiwfe         = "${{ github.event.inputs.buildid_qaapiwfe}}"
+          
+          Get-ChildItem -Path "$QA2_WFESERVERPATH" -ErrorAction SilentlyContinue
+          Remove-Item -Path "$QA2_WFESERVERPATH"   -Recurse -Force -Verbose -ErrorAction SilentlyContinue
+          
+          New-Item    -Path "$QA2_WFESERVERPATH"   -ItemType Directory -Verbose
+          New-Item    -Path "$QA2_WFEZIP"   -ItemType Directory -Verbose 
+        
+          $QA2_WFESERVERPATH        = "${{ secrets.ACEONLINE_QA2_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}"
+          $QA2_WFEZIP               = "$QA2_WFESERVERPATH\_WFEZIP"          
+                    
+          jfrog rt cp "ACEHW-DEVCI/${{ github.event.repository.name }}/${{ github.event.inputs.buildid_qaapiwfe }}-web-*.zip"  "ACEHW-QAREL/" --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+          jfrog rt dl "ACEHW-QAREL/${{ github.event.repository.name }}/${{ github.event.inputs.buildid_qaapiwfe }}-web-*.zip"  "$QA2_WFEZIP/" --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+         
+          Get-ChildItem -Path "$QA2_WFEZIP\${{ github.event.repository.name }}" -Filter "*-web-*.zip"         
+          
+          Get-ChildItem -Path "$QA2_WFEZIP\${{ github.event.repository.name }}" -Filter "*-web-*.zip" |
+          ForEach-Object {
+          Expand-Archive -Path $_.FullName  -DestinationPath "$QA2_WFESERVERPATH"  -Verbose -Force          
+           }
+
+          Start-Sleep -Seconds 30
+                    
+          set-Location -Path "D:\GitHub\actions-runner-a\_w\_tool\transform\WebConfigTransformRunner.1.0.0.1\Tools\"
+          .\WebConfigTransformRunner.exe  "$QA2_WFESERVERPATH\Web.config" "$QA2_WFESERVERPATH\bin\Web.QA2.config"  "$QA2_WFESERVERPATH\Web.config"
+          
+          #Remove-Item -Path "$QA2_WFEZIP"   -Recurse -Force -ErrorAction SilentlyContinue -Verbose                           
+          
+          cd "$QA2_WFESERVERPATH\bin\"
+          pwd
+          dir w*.config         
+          rm  w*.config -Recurse -Force -ErrorAction SilentlyContinue -Verbose                            
+   
+          Get-ChildItem -Path  "$QA2_WFESERVERPATH\bin\"
+          Exit PSSession
+          
+#########################################  DOWNLOAD BUILD ARTIFACT BASED ON DEVELOPER ENDS #############################################################
+
+#########################################  DOWNLOAD BUILD ARTIFACT FROM JFROG BEGINS #############################################################
+
+      - name: JFROG CLI SETUP 
+        uses: jfrog/setup-jfrog-cli@v2.0.0        
+        env:
+          JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
+          JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'          
+
+      - name: QA2 API DEPLOYMENT - LATEST DEV BUILD
+        if: github.event.inputs.buildid_qaapiwfe == ''
+        run : |         
+          exit 0
+          jfrog rt ping
+          jfrog config show
+          
+          echo "DOWNLOAD THE LATEST API ARTIFACT FROM JFROG"  
+          echo "JFROG-DEVAPI-LATESTBUILD=" "${{ secrets.ACEONLINE_QA2_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"                             
+       
+          $ACEONLINE_QA2_API_SERVER = "${{ secrets.ACEONLINE_QA2_API_SERVER }}"
+          $QA2_API_PATH             = "${{ secrets.QA_API_PATH }}"
+          $QA2_APISERVERPATH        = "${{ secrets.ACEONLINE_QA2_API_SERVER }}\${{ secrets.QA_API_PATH }}"
+          $QA2_APIZIP               = "${{ secrets.ACEONLINE_QA2_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"                   
+          $buildid_qaapiwfe         = "${{ github.event.inputs.buildid_qaapiwfe}}"
+                  
+          Get-ChildItem -Path "$QA2_APISERVERPATH" -ErrorAction SilentlyContinue
+          Remove-Item -Path "$QA2_APISERVERPATH"   -Recurse -Force -Verbose -ErrorAction SilentlyContinue
+          
+          New-Item    -Path "$QA2_APISERVERPATH"   -ItemType Directory -Verbose
+          New-Item    -Path "$QA2_APIZIP"   -ItemType Directory -Verbose
+        
+          $QA2_APISERVERPATH        = "${{ secrets.ACEONLINE_QA2_API_SERVER }}\${{ secrets.QA_API_PATH }}"
+          $QA2_APIZIP               = "${{ secrets.ACEONLINE_QA2_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"                            
+                    
+          jfrog rt dl "ACEHW-QAREL/${{ github.event.repository.name }}/*-api-*.zip"  $QA2_APIZIP/ --sort-by=created --sort-order=desc --limit=1  --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"         
+          jfrog rt  s "ACEHW-QAREL/${{ github.event.repository.name }}/*-api-*.zip" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+                        
+          Get-ChildItem -Path "$QA2_APIZIP\${{ github.event.repository.name }}" -Filter "*-api-*.zip"         
+          
+          Get-ChildItem -Path "$QA2_APIZIP\${{ github.event.repository.name }}" -Filter "*-api-*.zip" |
+          ForEach-Object {
+          Expand-Archive -Path $_.FullName  -DestinationPath "$QA2_APISERVERPATH"  -Verbose -Force          
+           }
+           
+          Start-Sleep -Seconds 30 
+          
+          set-Location -Path "D:\GitHub\actions-runner-a\_w\_tool\transform\WebConfigTransformRunner.1.0.0.1\Tools\"
+          .\WebConfigTransformRunner.exe "$QA2_APISERVERPATH\Web.config" "$QA2_APISERVERPATH\bin\Web.QA2.config"  "$QA2_APISERVERPATH\Web.config"           
+                   
+          #Remove-Item -Path "$QA2_APIZIP"   -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
+          
+          cd "$QA2_APISERVERPATH\bin\" 
+          pwd
+          dir w*.config
+          rm  w*.config  -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
+          
+          Get-ChildItem -Path  "$QA2_APISERVERPATH\bin\"                   
+         
+#### QA2 API ENVIRONMENT CONFIGURATION & QA2 API DEPLOYMENT ENDS ###
+                      
+#### QA2 WFE ENVIRONMENT CONFIGURATION & QA2 WFE DEPLOYMENT BEGINS ###       
+          
+      - name: QA2 WFE DEPLOYMENT - LATEST DEV BUILD
+        if: github.event.inputs.buildid_qaapiwfe == '' 
+        
+        run : |        
+          exit 0
+          echo "DOWNLOAD THE LATEST WFE ARTIFACT FROM JFROG"  
+          echo "JFROG-DEVWFE-LATESTBUILD=" "${{ secrets.ACEONLINE_QA2_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}\_WFEZIP" 
+          
+          $ACEONLINE_QA2_WFE_SERVER = "${{ secrets.ACEONLINE_QA2_WFE_SERVER }}"
+          $QA2_WFE_PATH             = "${{ secrets.QA_WFE_PATH }}"
+          $QA2_WFESERVERPATH        = "${{ secrets.ACEONLINE_QA2_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}"
+          $QA2_WFEZIP               = "${{ secrets.ACEONLINE_QA2_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}\_WFEZIP"  
+          $buildid_qaapiwfe         = "${{ github.event.inputs.buildid_qaapiwfe}}"
+          
+          Get-ChildItem -Path "$QA2_WFESERVERPATH" -ErrorAction SilentlyContinue
+          Remove-Item -Path "$QA2_WFESERVERPATH"   -Recurse -Force -Verbose -ErrorAction SilentlyContinue
+          
+          New-Item    -Path "$QA2_WFESERVERPATH"   -ItemType Directory -Verbose
+          New-Item    -Path "$QA2_WFEZIP"   -ItemType Directory -Verbose 
+        
+          $QA2_WFESERVERPATH        = "${{ secrets.ACEONLINE_QA2_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}"
+          $QA2_WFEZIP               = "$QA2_WFESERVERPATH\_WFEZIP"          
+                    
+          jfrog rt dl "ACEHW-QAREL/${{ github.event.repository.name }}/*-web-*.zip"  $QA2_WFEZIP/ --sort-by=created --sort-order=desc --limit=1  --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+          jfrog rt  s "ACEHW-QAREL/${{ github.event.repository.name }}/*-web-*.zip" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"                           
+                 
+          Get-ChildItem -Path "$QA2_WFEZIP\${{ github.event.repository.name }}" -Filter "*-web-*.zip"         
+          
+          Get-ChildItem -Path "$QA2_WFEZIP\${{ github.event.repository.name }}" -Filter "*-web-*.zip" |
+          ForEach-Object {
+          Expand-Archive -Path $_.FullName  -DestinationPath "$QA2_WFESERVERPATH"  -Verbose -Force          
+           }
+                   
+          Start-Sleep -Seconds 30
+                    
+          set-Location -Path "D:\GitHub\actions-runner-a\_w\_tool\transform\WebConfigTransformRunner.1.0.0.1\Tools\"
+          .\WebConfigTransformRunner.exe  "$QA2_WFESERVERPATH\Web.config" "$QA2_WFESERVERPATH\bin\Web.QA2.config"  "$QA2_WFESERVERPATH\Web.config"
+          
+          #Remove-Item -Path "$QA2_WFEZIP"   -Recurse -Force -ErrorAction SilentlyContinue -Verbose                           
+          
+          cd "$QA2_WFESERVERPATH\bin\"
+          pwd
+          dir w*.config         
+          rm  w*.config -Recurse -Force -ErrorAction SilentlyContinue -Verbose                            
+   
+          Get-ChildItem -Path  "$QA2_WFESERVERPATH\bin\"
+          Exit PSSession          
+#########################################  DOWNLOAD BUILD ARTIFACT FROM JFROG ENDS #############################################################
