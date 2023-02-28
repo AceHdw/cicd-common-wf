@@ -1,64 +1,39 @@
-##  "The below variables will give some insights about the Pre Defined Variables that should get updated in the GH ==> Secrets"  ###
-
-# (ORG) secrets.JF_UN ==> JFROG USERNAME (admin)
-# (ORG) secrets.JF_PW  ==> JFROG PASSWORD (encrypted)
-# (ORG) secrets.JF_3RDPARTY ==> http://localhost:8081/artifactory/THIRDPARTYDLL/3rdParty_1.zip
-# (ORG) secrets.JF_DEVPR ==>http://localhost:8081/artifactory/DEVPR/
-# (ORG) secrets.JF_DEVCI ==> http://localhost:8081/artifactory/DEVCI/
-# (ORG) secrets.JF_NUGET ==> http://localhost:8081/artifactory/api/nuget/nuget
-# (ORG) secrets.JF_EXTNUGET ==> http://localhost:8081/artifactory/api/nuget/externaldllnuget
-# (ORG) secrets.JF_QAREL ==> http://localhost:8081/artifactory/QAREL/
-# (ORG) secrets.JF_ARTIFACTORY_SECRET_1 ==> JFROG CLI SETUP TOKEN VALUE/
-# (ORG) secrets.THIRDPARTYNUGET==>\\Liss0768\3rdpartydll\NugetPackages
-
-# (ORG) secrets.ACEONLINE_DEV_API_SERVER ==>\\liss0774
-# (ORG) secrets.ACEONLINE_DEV_WFE_SERVER ==>\\liss0749
-
-# (ORG) secrets.ACEONLINE_QA1_API_SERVER ==>\\liss0772
-# (ORG) secrets.ACEONLINE_QA1_WFE_SERVER ==>\\liss0314
-
-# (ORG) secrets.ACEONLINE_QA2_API_SERVER ==>\\liss0773
-# (ORG) secrets.ACEONLINE_QA2_WFE_SERVER ==>\\liss0315
-
-# (ORG) secrets.ACEONLINE_PROD1_API_SERVER ==>\\liss0775
-# (ORG) secrets.ACEONLINE_PROD1_WFE_SERVER ==>\\liss0331
-
-# (ORG) secrets.ACEONLINE_PROD2_API_SERVER ==>\\liss0776
-# (ORG) secrets.ACEONLINE_PROD2_WFE_SERVER ==>\\liss0332
-
-####################################################################################################
-
-# (REPO) secrets.AO_SLNNAME ==> src\DMPS.SLN
-# (REPO) secrets.AO_API_CSPROJ==>src\hosts\DMPSServices.ServiceHost\DMPSServices.ServiceHost.csproj
-# (REPO) secrets.AO_WEB_CSPROJ==>src\hosts\DMPS.Website\DMPS.Website.csproj
-
-# (REPO) secrets.DEV_API_PATH ==>DevCorpAceApps\DMPSServices
-# (REPO) secrets.DEV_WFE_PATH ==>NetApplications\DMPS
- 
-# (REPO) secrets.QA_API_PATH ==>CorpAceApps\DMPSServices
-# (REPO) secrets.QA_WFE_PATH ==>NetApplications\DMPS
-
-# (REPO) secrets.PROD_API_PATH ==>CorpAceApps\DMPSServices
-# (REPO) secrets.PROD_WFE_PATH ==>NetApplications\DMPS
-
-# (REPO) secrets.QA ==>QA
-# (REPO) secrets.PROD ==>PRODD
-
-######################################################################################################
 name: QA-DEPLOY 
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       buildid_qaapiwfe:
-       description: 'DEV BUILD NUMBER TO DEPLOY. IF BLANK, DEPLOYS LATEST DEV BUILD.'       
+       required: true
+       description: 'DEV BUILD NUMBER TO DEPLOY. IF BLANK, DEPLOYS LATEST DEV BUILD.' 
+       type: string
+       
+    secrets:
+      JF_ARTIFACTORY_SECRET_1:
+        required: true
+      ACEONLINE_QA1_API_SERVER:
+        required: true     
+      ACEONLINE_QA1_WFE_SERVER:
+        required: true
+      ACEONLINE_QA2_API_SERVER:
+        required: true     
+      ACEONLINE_QA2_WFE_SERVER:
+        required: true
+      QA_API_PATH:
+        required: true    
+      QA_WFE_PATH:
+        required: true      
+      JF_UN:
+        required: true
+      JF_PW:
+        required: true  
         
 env:
  commitid: ${{ github.sha }}
  
 jobs:
   QA1:
-    uses: AceHdw/DMPS-ResponsiveUI-ForTesting/.github/workflows/QA1-CD.yml@main
+    uses: AceHdw/cicd-common-wf/.github/workflows/QA1-CD.yml@main
     with:
       buildid_qaapiwfe: ${{ github.event.inputs.buildid_qaapiwfe }}    
       
@@ -78,7 +53,7 @@ jobs:
 
   QA2:
     needs: QA1
-    uses: AceHdw/DMPS-ResponsiveUI-ForTesting/.github/workflows/QA2-CD.yml@main
+    uses: AceHdw/cicd-common-wf/.github/workflows/QA2-CD.yml@main
     with:
       buildid_qaapiwfe: ${{ github.event.inputs.buildid_qaapiwfe }}
       
