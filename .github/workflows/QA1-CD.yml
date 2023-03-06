@@ -219,7 +219,7 @@ jobs:
           JF_ARTIFACTORY_1: ${{ secrets.JF_ARTIFACTORY_SECRET_1 }}         
           JFROG_CLI_TRANSITIVE_DOWNLOAD_EXPERIMENTAL: 'true'          
 
-      - name: QA1 API DEPLOYMENT - LATEST DEV BUILD
+      - name: QA1 API DEPLOYMENT - LATEST DEV BUILD Common
         if: github.event.inputs.buildid_qaapiwfe == ''
         run : |         
           exit 0
