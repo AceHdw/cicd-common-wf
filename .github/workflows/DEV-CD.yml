@@ -110,7 +110,7 @@ jobs:
           $DEV_WFE_PATH = "${{ secrets.DEV_WFE_PATH }}"
           
           #$DEV_WFESERVERPATH = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}"
-          $DEV_WFESERVERPATH = "${{ vars.WEB_TEST_PATH }}"
+          $DEV_WFESERVERPATH = "${{ vars.DEV_WEB_TEST_PATH }}"
           
           #$DEV_WFEZIP =  "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}\_WFEZIP"
           $DEV_WFEZIP =  "$DEV_WFESERVERPATH\_WFEZIP"
@@ -131,7 +131,7 @@ jobs:
       - name: DEV WFE DEPLOYMENT
         run : |
           #$DEV_WFESERVERPATH = "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}"
-          $DEV_WFESERVERPATH = "${{ vars.WEB_TEST_PATH }}"
+          $DEV_WFESERVERPATH = "${{ vars.DEV_WEB_TEST_PATH }}"
           
           #$DEV_WFEZIP =  "${{ secrets.ACEONLINE_DEV_WFE_SERVER }}\${{ secrets.DEV_WFE_PATH }}\_WFEZIP"
           $DEV_WFEZIP =  "$DEV_WFESERVERPATH\_WFEZIP"
