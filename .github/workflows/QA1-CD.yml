@@ -255,8 +255,8 @@ jobs:
           New-Item    -Path "$QA1_WFESERVERPATH"   -ItemType Directory -Verbose
           New-Item    -Path "$QA1_WFEZIP"   -ItemType Directory -Verbose 
         
-          $QA1_WFESERVERPATH        = "${{ secrets.ACEONLINE_QA1_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}"
-          $QA1_WFEZIP               = "$QA1_WFESERVERPATH\_WFEZIP"          
+          #$QA1_WFESERVERPATH        = "${{ secrets.ACEONLINE_QA1_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}"
+          #$QA1_WFEZIP               = "$QA1_WFESERVERPATH\_WFEZIP"          
                     
           jfrog rt dl "ACEHW-QAREL/${{ github.event.repository.name }}/*-web-*.zip"  $QA1_WFEZIP/ --sort-by=created --sort-order=desc --limit=1  --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
           jfrog rt  s "ACEHW-QAREL/${{ github.event.repository.name }}/*-web-*.zip" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"                           
