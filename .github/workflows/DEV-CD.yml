@@ -49,7 +49,7 @@ jobs:
           $DEV_API_PATH             = "${{ secrets.DEV_API_PATH }}"
           
           #$DEV_APISERVERPATH        = "${{ secrets.ACEONLINE_DEV_API_SERVER }}\${{ secrets.DEV_API_PATH }}"
-          $DEV_APISERVERPATH        = "${{ vars.API_TEST_PATH }}"
+          $DEV_APISERVERPATH        = "${{ vars.DEV_API_TEST_PATH }}"
           
           $DEV_APIZIP               = "$DEV_APISERVERPATH\_APIZIP"
           
@@ -69,7 +69,7 @@ jobs:
       - name: DEV API DEPLOYMENT
         run : |        
           #$DEV_APISERVERPATH        = "${{ secrets.ACEONLINE_DEV_API_SERVER }}\${{ secrets.DEV_API_PATH }}"
-          $DEV_APISERVERPATH        = "${{ vars.API_TEST_PATH }}"
+          $DEV_APISERVERPATH        = "${{ vars.DEV_API_TEST_PATH }}"
           
           $DEV_APIZIP               = "$DEV_APISERVERPATH\_APIZIP"
           
