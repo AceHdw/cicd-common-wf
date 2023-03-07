@@ -194,9 +194,9 @@ jobs:
           New-Item    -Path "$QA1_APISERVERPATH"   -ItemType Directory -Verbose
           New-Item    -Path "$QA1_APIZIP"   -ItemType Directory -Verbose
         
-          $QA1_APISERVERPATH        = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}"
-          $QA1_APIZIP               = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"         
-          Remove-Item -Path "$QA1_APIZIP"   -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
+          #$QA1_APISERVERPATH        = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}"
+          #$QA1_APIZIP               = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"                  
+          
           
           jfrog rt cp "ACEHW-DEVCI/${{ github.event.repository.name }}/*-api-*.zip" "ACEHW-QAREL/" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
           jfrog rt cp "ACEHW-DEVCI/${{ github.event.repository.name }}/*-web-*.zip" "ACEHW-QAREL/" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
@@ -218,7 +218,7 @@ jobs:
           set-Location -Path "D:\GitHub\actions-runner-a\_w\_tool\transform\WebConfigTransformRunner.1.0.0.1\Tools\"
           .\WebConfigTransformRunner.exe "$QA1_APISERVERPATH\Web.config" "$QA1_APISERVERPATH\bin\Web.QA1.config"  "$QA1_APISERVERPATH\Web.config"           
                    
-          Remove-Item -Path "$QA1_APIZIP"   -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
+          #Remove-Item -Path "$QA1_APIZIP"   -Recurse -Force -ErrorAction SilentlyContinue -Verbose 
           
           cd "$QA1_APISERVERPATH\bin\" 
           pwd
