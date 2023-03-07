@@ -222,7 +222,7 @@ jobs:
       - name: QA1 API DEPLOYMENT - LATEST DEV BUILD
         if: github.event.inputs.buildid_qaapiwfe == ''
         run : |         
-          exit 0
+          #exit 0
           jfrog rt ping
           jfrog config show
           
@@ -281,7 +281,7 @@ jobs:
         if: github.event.inputs.buildid_qaapiwfe == '' 
         
         run : |        
-          exit 0
+          #exit 0
           echo "DOWNLOAD THE LATEST WFE ARTIFACT FROM JFROG"  
           echo "JFROG-DEVWFE-LATESTBUILD=" "${{ secrets.ACEONLINE_QA1_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}\_WFEZIP" 
           
