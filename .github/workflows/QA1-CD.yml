@@ -1,53 +1,3 @@
-#  "The below variables will give some insights about the Pre Defined Variables that should get updated in the GH ==> Secrets"  ###
-
-# (ORG) secrets.JF_UN ==> JFROG USERNAME (admin)
-# (ORG) secrets.JF_PW  ==> JFROG PASSWORD (encrypted)
-# (ORG) secrets.JF_3RDPARTY ==> http://localhost:8081/artifactory/THIRDPARTYDLL/3rdParty_1.zip
-# (ORG) secrets.JF_DEVPR ==>http://localhost:8081/artifactory/DEVPR/
-# (ORG) secrets.JF_DEVCI ==> http://localhost:8081/artifactory/DEVCI/
-# (ORG) secrets.JF_NUGET ==> http://localhost:8081/artifactory/api/nuget/nuget
-# (ORG) secrets.JF_EXTNUGET ==> http://localhost:8081/artifactory/api/nuget/externaldllnuget
-# (ORG) secrets.JF_QAREL ==> http://localhost:8081/artifactory/QAREL/
-# (ORG) secrets.JF_ARTIFACTORY_SECRET_1 ==> JFROG CLI SETUP TOKEN VALUE/
-# (ORG) secrets.THIRDPARTYNUGET==>\\Liss0768\3rdpartydll\NugetPackages
-
-# (ORG) secrets.ACEONLINE_DEV_API_SERVER ==>\\liss0774
-# (ORG) secrets.ACEONLINE_DEV_WFE_SERVER ==>\\liss0749
-
-# (ORG) secrets.ACEONLINE_QA1_API_SERVER ==>\\liss0772
-# (ORG) secrets.ACEONLINE_QA1_WFE_SERVER ==>\\liss0314
-
-# (ORG) secrets.ACEONLINE_QA2_API_SERVER ==>\\liss0773
-# (ORG) secrets.ACEONLINE_QA2_WFE_SERVER ==>\\liss0315
-
-# (ORG) secrets.ACEONLINE_PROD1_API_SERVER ==>\\liss0775
-# (ORG) secrets.ACEONLINE_PROD1_WFE_SERVER ==>\\liss0331
-
-# (ORG) secrets.ACEONLINE_PROD2_API_SERVER ==>\\liss0776
-# (ORG) secrets.ACEONLINE_PROD2_WFE_SERVER ==>\\liss0332
-
-
-####################################################################################################
-
-# (REPO) secrets.AO_SLNNAME ==> src\DMPS.SLN
-# (REPO) secrets.AO_API_CSPROJ==>src\hosts\DMPSServices.ServiceHost\DMPSServices.ServiceHost.csproj
-# (REPO) secrets.AO_WEB_CSPROJ==>src\hosts\DMPS.Website\DMPS.Website.csproj
-
-# (REPO) secrets.DEV_API_PATH ==>DevCorpAceApps\DMPSServices
-# (REPO) secrets.DEV_WFE_PATH ==>NetApplications\DMPS
- 
-# (REPO) secrets.QA_API_PATH ==>CorpAceApps\DMPSServices
-# (REPO) secrets.QA_WFE_PATH ==>NetApplications\DMPS
-
-# (REPO) secrets.PROD_API_PATH ==>CorpAceApps\DMPSServices
-# (REPO) secrets.PROD_WFE_PATH ==>NetApplications\DMPS
-
-# (REPO) secrets.QA ==>QA
-# (REPO) secrets.PROD ==>PROD
-######################################################################################################
-
-###### QA MASTER SETUP BEGINS #####
-
 name: QA1-CD
 on:
   workflow_call:
@@ -230,8 +180,12 @@ jobs:
        
           $ACEONLINE_QA1_API_SERVER = "${{ secrets.ACEONLINE_QA1_API_SERVER }}"
           $QA1_API_PATH             = "${{ secrets.QA_API_PATH }}"
-          $QA1_APISERVERPATH        = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}"
-          $QA1_APIZIP               = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"                   
+          #$QA1_APISERVERPATH        = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}"
+          $QA1_APISERVERPATH        = "${{ vars.QA1_API_TEST_PATH }}"
+          
+          #$QA1_APIZIP               = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"                   
+          $QA1_APIZIP               = "${{ vars.QA1_API_TEST_PATH }}\_APIZIP"                   
+          
           $buildid_qaapiwfe         = "${{ github.event.inputs.buildid_qaapiwfe}}"
                   
           Get-ChildItem -Path "$QA1_APISERVERPATH" -ErrorAction SilentlyContinue
@@ -287,8 +241,12 @@ jobs:
           
           $ACEONLINE_QA1_WFE_SERVER = "${{ secrets.ACEONLINE_QA1_WFE_SERVER }}"
           $QA1_WFE_PATH             = "${{ secrets.QA_WFE_PATH }}"
-          $QA1_WFESERVERPATH        = "${{ secrets.ACEONLINE_QA1_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}"
-          $QA1_WFEZIP               = "${{ secrets.ACEONLINE_QA1_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}\_WFEZIP"  
+          #$QA1_WFESERVERPATH        = "${{ secrets.ACEONLINE_QA1_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}"
+          $QA1_WFESERVERPATH         = "${{ vars.QA1_WEB_TEST_PATH }}"
+          
+          #$QA1_WFEZIP             = "${{ secrets.ACEONLINE_QA1_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}\_WFEZIP"  
+          $QA1_WFEZIP = "${{ vars.QA1_WEB_TEST_PATH }}\_WFEZIP"
+          
           $buildid_qaapiwfe         = "${{ github.event.inputs.buildid_qaapiwfe}}"
           
           Get-ChildItem -Path "$QA1_WFESERVERPATH" -ErrorAction SilentlyContinue
