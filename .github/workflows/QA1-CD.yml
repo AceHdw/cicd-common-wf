@@ -175,8 +175,7 @@ jobs:
           $QA1_WFEZIP               = "${{ secrets.ACEONLINE_QA1_WFE_SERVER }}\${{ secrets.QA_WFE_PATH }}\_WFEZIP"  
           $buildid_qaapiwfe         = "${{ github.event.inputs.buildid_qaapiwfe}}"
           
-          Get-ChildItem -Path "$QA1_WFESERVERPATH" -ErrorAction SilentlyContinue
-          Remove-Item -Path "$QA1_WFESERVERPATH"   -Recurse -Force -Verbose -ErrorAction SilentlyContinue
+          Get-ChildItem -Path "$QA1_WFESERVERPATH" -ErrorAction SilentlyContinue          
           
           New-Item    -Path "$QA1_WFESERVERPATH"   -ItemType Directory -Verbose
           New-Item    -Path "$QA1_WFEZIP"   -ItemType Directory -Verbose 
