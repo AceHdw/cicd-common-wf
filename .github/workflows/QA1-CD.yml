@@ -244,8 +244,8 @@ jobs:
           $QA1_APISERVERPATH        = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}"
           $QA1_APIZIP               = "${{ secrets.ACEONLINE_QA1_API_SERVER }}\${{ secrets.QA_API_PATH }}\_APIZIP"         
                     
-          jfrog rt cp "ACEHW-DEVCI/${{ github.event.repository.name }}/*-api-*.zip" "ACEHW-QAREL/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
-          jfrog rt cp "ACEHW-DEVCI/${{ github.event.repository.name }}/*-web-*.zip" "ACEHW-QAREL/${{ github.event.repository.name }}/" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+          jfrog rt cp "ACEHW-DEVCI/${{ github.event.repository.name }}/*-api-*.zip" "ACEHW-QAREL/" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
+          jfrog rt cp "ACEHW-DEVCI/${{ github.event.repository.name }}/*-web-*.zip" "ACEHW-QAREL/" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
           
           jfrog rt dl "ACEHW-QAREL/${{ github.event.repository.name }}/*-api-*.zip"  $QA1_APIZIP/ --sort-by=created --sort-order=desc --limit=1  --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"         
           jfrog rt  s "ACEHW-QAREL/${{ github.event.repository.name }}/*-api-*.zip" --sort-by=created --sort-order=desc --limit=1 --url "http://localhost:8082/artifactory/" --user="${{ secrets.JF_UN }}" --password="${{ secrets.JF_PW }}"
@@ -255,6 +255,7 @@ jobs:
           
           Get-ChildItem -Path "$QA1_APIZIP\${{ github.event.repository.name }}" -Filter "*-api-*.zip" |
           ForEach-Object {
+          echo "Unzip"
           Expand-Archive -Path $_.FullName  -DestinationPath "$QA1_APISERVERPATH"  -Verbose -Force          
            }
            
